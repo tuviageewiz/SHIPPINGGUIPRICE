@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistics Cost Calculator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #f5f6fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.8;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+        }
+
+        .file-upload {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+        }
+
+        button {
+            padding: 12px 25px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .results {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .result-item {
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+
+        .result-card {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .price-box {
+            flex: 1;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .price-box.air {
+            border-left: 4px solid #3498db;
+        }
+
+        .price-box.sea {
+            border-left: 4px solid #2ecc71;
+        }
+
+        .price-box.difference {
+            border-left: 4px solid #e74c3c;
+            margin-top: 20px;
+        }
+
+        .price-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stats {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .history {
+            margin-top: 30px;
+        }
+
+        .history h3 {
+            margin-bottom: 15px;
+        }
+
+        .search-history {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1><i class="fas fa-shipping-fast"></i> Logistics Cost Calculator</h1>
+            <p>Quick SKU search for shipping rates and cost comparison</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-content">
+            <div class="search-container">
+                <div class="file-upload">
+                    <i class="fas fa-file-csv fa-2x"></i>
+                    <h3>Upload CSV File</h3>
+                    <p>Select your pricing data file</p>
+                    <input type="file" id="csvFile" accept=".csv">
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="skuSearch" placeholder="Enter SKU number...">
+                    <button onclick="searchSKU()"><i class="fas fa-search"></i> Search</button>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>Searching...</p>
+            </div>
+
+            <div class="results" id="searchResults">
+                <!-- Results will be displayed here -->
+            </div>
+
+            <div class="history">
+                <h3>Recent Searches</h3>
+                <div class="search-history" id="searchHistory">
+                    <!-- Search history will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let csvData = [];
+        let searchHistory = [];
+
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const csvContent = event.target.result;
+                csvData = parseCSV(csvContent);
+                alert('CSV file loaded successfully!');
+            };
+
+            reader.readAsText(file);
+        });
+
+        function parseCSV(content) {
+            const lines = content.split('\n');
+            const headers = lines[0].split(',');
+            const data = [];
+
+            for(let i = 1; i < lines.length; i++) {
+                if(lines[i].trim() === '') continue;
+
+                const values = lines[i].split(',');
+                const entry = {};
+
+                headers.forEach((header, index) => {
+                    entry[header.trim()] = values[index]?.trim();
+                });
+
+                data.push(entry);
+            }
+
+            return data;
+        }
+
+        function searchSKU() {
+            const skuInput = document.getElementById('skuSearch').value.trim();
+            const resultsDiv = document.getElementById('searchResults');
+            const loadingDiv = document.getElementById('loading');
+
+            if(!csvData.length) {
+                resultsDiv.innerHTML = '<p style="color: var(--accent-color);"><i class="fas fa-exclamation-circle"></i> Please upload a CSV file first!</p>';
+                return;
+            }
+
+            loadingDiv.style.display = 'block';
+            resultsDiv.innerHTML = '';
+
+            // Simulate loading time
+            setTimeout(() => {
+                const result = csvData.find(row => row['GW SKU']?.toLowerCase() === skuInput.toLowerCase());
+                loadingDiv.style.display = 'none';
+
+                if(result) {
+                    // Add to search history
+                    addToHistory(skuInput);
+
+                    // Calculate price difference
+                    const airPrice = parseFloat(result['Total R AIR (EXCL)'] || 0);
+                    const seaPrice = parseFloat(result['Total R SEA (EXCL)'] || 0);
+                    const priceDifference = airPrice - seaPrice;
+
+                    resultsDiv.innerHTML = `
+                        <div class="result-item">
+                            <h3>Results for SKU: ${skuInput}</h3>
+                            <div class="result-card">
+                                <div class="price-box air">
+                                    <i class="fas fa-plane fa-2x"></i>
+                                    <h4>Air Freight</h4>
+                                    <div class="price-value">R ${result['Total R AIR (EXCL)'] || 'N/A'}</div>
+                                    <p>Excluding VAT</p>
+                                </div>
+                                <div class="price-box sea">
+                                    <i class="fas fa-ship fa-2x"></i>
+                                    <h4>Sea Freight</h4>
+                                    <div class="price-value">R ${result['Total R SEA (EXCL)'] || 'N/A'}</div>
+                                    <p>Excluding VAT</p>
+                                </div>
+                            </div>
+                            <div class="price-box difference">
+                                <i class="fas fa-calculator fa-2x"></i>
+                                <h4>Price Difference (Air - Sea)</h4>
+                                <div class="price-value">R ${priceDifference.toFixed(2)}</div>
+                                <p>Excluding VAT</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = '<p><i class="fas fa-times-circle"></i> No results found for this SKU.</p>';
+                }
+            }, 500);
+        }
+
+        function addToHistory(sku) {
+            if (!searchHistory.includes(sku)) {
+                searchHistory.unshift(sku);
+                if (searchHistory.length > 5) {
+                    searchHistory.pop();
+                }
+                updateHistoryDisplay();
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyDiv = document.getElementById('searchHistory');
+            historyDiv.innerHTML = searchHistory.map(sku => `
+                <div class="history-item" onclick="searchHistoryItem('${sku}')">
+                    <i class="fas fa-history"></i> ${sku}
+                </div>
+            `).join('');
+        }
+
+        function searchHistoryItem(sku) {
+            document.getElementById('skuSearch').value = sku;
+            searchSKU();
+        }
+    </script>
+</body>
+</html>
